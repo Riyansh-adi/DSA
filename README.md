@@ -75,7 +75,7 @@ DSA/
 
 Clone the repository:
 
-git clone https://github.com/your-username/DSA.git
+git clone (https://github.com/Riyansh-adi/DSA)
 
 
 Open any folder and run the files using your preferred compiler / IDE.
