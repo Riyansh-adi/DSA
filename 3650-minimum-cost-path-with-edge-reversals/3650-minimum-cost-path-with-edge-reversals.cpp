@@ -1,47 +1,48 @@
 class Solution {
 public:
     int minCost(int n, vector<vector<int>>& edges) {
-        // Adjacency list: node -> {neighbor, cost}
-        vector<vector<pair<int,int>>> graph(n);
-        
-        // Build graph
+        vector<vector<pair<int,int>>> out(n), in(n);
+
+        // Build outgoing and incoming edge lists
         for (auto &e : edges) {
-            int u = e[0];
-            int v = e[1];
-            
-            graph[u].push_back({v, 0}); // use edge as-is
-            graph[v].push_back({u, 1}); // reverse edge
+            int u = e[0], v = e[1], w = e[2];
+            out[u].push_back({v, w});
+            in[v].push_back({u, w});
         }
-        
-        // Distance array
-        vector<int> dist(n, INT_MAX);
-        deque<int> dq;
-        
-        // Start from node 0
+
+        vector<long long> dist(n, LLONG_MAX);
+        priority_queue<pair<long long,int>, 
+                       vector<pair<long long,int>>, 
+                       greater<>> pq;
+
         dist[0] = 0;
-        dq.push_front(0);
-        
-        // 0-1 BFS
-        while (!dq.empty()) {
-            int node = dq.front();
-            dq.pop_front();
-            
-            for (auto &edge : graph[node]) {
-                int next = edge.first;
-                int cost = edge.second;
-                
-                if (dist[node] + cost < dist[next]) {
-                    dist[next] = dist[node] + cost;
-                    
-                    if (cost == 0)
-                        dq.push_front(next);
-                    else
-                        dq.push_back(next);
+        pq.push({0, 0});
+
+        while (!pq.empty()) {
+            auto [cost, u] = pq.top();
+            pq.pop();
+
+            if (cost > dist[u]) continue;
+            if (u == n - 1) return cost;
+
+            // 1️⃣ Normal outgoing edges
+            for (auto &[v, w] : out[u]) {
+                if (dist[v] > cost + w) {
+                    dist[v] = cost + w;
+                    pq.push({dist[v], v});
+                }
+            }
+
+            // 2️⃣ Reverse incoming edges using switch at u
+            for (auto &[v, w] : in[u]) {
+                long long newCost = cost + 2LL * w;
+                if (dist[v] > newCost) {
+                    dist[v] = newCost;
+                    pq.push({newCost, v});
                 }
             }
         }
-        
-        // If destination unreachable
-        return dist[n - 1] == INT_MAX ? -1 : dist[n - 1];
+
+        return dist[n - 1] == LLONG_MAX ? -1 : dist[n - 1];
     }
 };
